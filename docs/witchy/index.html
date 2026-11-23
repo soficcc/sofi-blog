@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../">
+<head>
+<meta charset="UTF-8">
+<!--
+  ================= HOW TO EDIT THIS PAGE =================
+  - Entries, posts, links and the right now box: don't edit them here. Run ./sofi-blog.sh
+    and answer its questions; it updates the site for you.
+  - Text that is written right here (about, welcome, the "made" page): look for the
+    comments marked EDIT. Change only the words between the tags.
+  - Colors and sizes: in style.css (its top comment lists every color).
+  - Pictures: all in the img/ folder. Replace a file with your own and keep the same name,
+    or change the file name where it's used (marked "picture" below and in style.css).
+  - Credits: keep the itinerae credit, it's the layout author's request.
+  =========================================================
+-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sofi's blog kinda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500&family=Space+Mono:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="alternate" type="application/rss+xml" title="sofi's blog kinda" href="../feed.xml">
+</head>
+
+<body>
+
+<!-- ==================== NOW PLAYING (full-width bar, always at the top of the screen) ==================== -->
+<!-- the music comes from the playlist set in config.toml (YouTube or SoundCloud); buttons are img/btn-*.svg -->
+<div class="player nowbar" id="player" role="region" aria-label="Music player">
+  <span class="nowbar-label">now playing</span>
+  <div class="btns">
+    <button type="button" data-player="prev" aria-label="Previous song"><img src="img/btn-prev.svg" alt=""></button>
+    <button type="button" data-player="play" aria-label="Play" aria-pressed="false"><img class="i-play" src="img/btn-play.svg" alt=""><img class="i-pause" src="img/btn-pause.svg" alt=""></button>
+    <button type="button" data-player="next" aria-label="Next song"><img src="img/btn-next.svg" alt=""></button>
+  </div>
+  <div class="marquee" data-player="title" aria-live="polite"></div>
+  <span class="time" data-player="time">0:00</span>
+  <div class="bar" data-player="bar" title="click to jump"><i data-player="fill"></i></div>
+  <span class="time" data-player="duration">0:00</span>
+  <a class="sc" data-player="link" href="https://soundcloud.com" target="_blank" rel="noopener" hidden>on YouTube</a>
+</div>
+
+<div class="wrap">
+
+<!-- ==================== SIDEBAR (left) ==================== -->
+<div id="left">
+
+<div class="title">about</div>
+<!-- picture: img/avatar.svg -->
+<img class="av" src="img/avatar.svg" width="40" height="40" alt="pixel cat">
+<!-- EDIT: a few words about you -->
+Hi! I'm sofi, very nostalgic about tumblr rn<br clear="left">
+
+<div class="title">right now</div>
+<div id="now"></div>
+
+<div class="title">elsewhere</div>
+<div id="elsewhere"></div>
+
+<div class="title">credits</div>
+<!-- keep the layout credit; add your own credits after it -->
+<span class="small">layout: <a href="https://itinerae.org" target="_blank" rel="noopener">itinerae</a><br>
+illustrations: TODO add links<br>
+book data: Open Library<br>
+film data: Wikidata<br>
+series data: <a href="https://www.tvmaze.com" target="_blank" rel="noopener">TVmaze</a><br>
+album data: MusicBrainz<br>
+game data: Wikidata, Steam</span>
+
+</div>
+
+
+<div class="main">
+
+<!-- ==================== BANNER ==================== -->
+<div id="banner">
+<div class="scene">
+<!-- picture: img/banner.svg (a jpg or png works too, just change the name) -->
+<img class="art" src="img/banner.svg" alt="Tarot hand">
+<!-- EDIT: your site name -->
+<div class="bigtitle">sofi's blog <span>kinda</span></div>
+</div>
+<!-- the nav buttons: href is the section it opens -->
+<ul id="navigation">
+  <li><a href="#home" data-nav="home">home</a></li>
+  <li><a href="#albums" data-nav="albums">albums</a></li>
+  <li><a href="#films" data-nav="films">films &amp; series</a></li>
+  <li><a href="#books" data-nav="books">books</a></li>
+  <li><a href="#games" data-nav="games">games</a></li>
+  <li><a href="#links" data-nav="links">links</a></li>
+  <li><a href="#made" data-nav="made">made</a></li>
+</ul>
+</div>
+
+
+<!-- ==================== MAIN TEXT BOX ==================== -->
+<div id="content">
+
+<!-- HOME: the welcome text (the posts get their own frames under this box) -->
+<section data-route="home">
+<h2 class="title">welcome</h2>
+<!-- EDIT: write freely; <br><br> makes a blank line, <i>...</i> italic -->
+<p>This is basically a collection of all media content that I consumed and/or enjoyed + music that I make and random rants. I'm not I'm satisfied with the design yet but at least it's in an acceptable state.</p>
+<p>At some point I will add an export feature too and when I finally build my own server the "now playing" panel will actually play music.</p>
+</section>
+
+<!-- MADE: things you make and write; the text comes from ./sofi-blog.sh ("edit the made page") -->
+<section data-route="made" hidden>
+<h2 class="title">made</h2>
+<div id="made"></div>
+</section>
+
+<!-- every other page (albums, films & series, books, games, links) is drawn here -->
+<section data-route="view" id="view" hidden></section>
+
+</div>
+
+<!-- ==================== HOMEPAGE POSTS: one frame each ==================== -->
+<div id="feed" class="feed" data-route="home"></div>
+
+</div>
+</div>
+
+<script src="../shared/data.js"></script>
+<script src="../shared/app.js"></script>
+</body>
+</html>

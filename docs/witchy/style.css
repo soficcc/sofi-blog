@@ -1,0 +1,201 @@
+/* ================= WITCHY STYLE =================
+   Colors: every color is a hex code. To change one everywhere, use find & replace.
+     #3B3546  night: page and banner background
+     #4E4460  ink: text, borders, title bars     #241F2B  darkest outline
+     #F1EEF2  panels       #E8E2EA  slightly darker panel (post headers, backlog)
+     #AE99B2  lilac: frames, accents     #DCD3DE  pale lilac     #776B89  lavender
+     #655978  links        #C0AB6A  gold
+   Pictures live in the img/ folder next to this file. Swap a file for your own
+   (keep the same name) and the page picks it up; the comments below say which is which.
+   ================================================= */
+
+/* PAGE: text font and size, text color, and the tiled background (img/background.svg).
+   To use a picture: background:#3B3546 url('img/your-picture.jpg') 0 0/280px auto; */
+body {margin:0;padding:20px;color:#2F2A37;font:13px/1.6 Lora, Georgia, serif;letter-spacing:.5px;text-align:justify;hyphens:auto;
+    background:linear-gradient(rgba(38,30,48,.86),rgba(38,30,48,.86)), #2E2538 url('img/background.jpg') 0 0/280px auto;}
+[hidden] {display:none !important;}
+textarea, select, button {font:inherit;letter-spacing:inherit;}
+
+/* LINKS: normal color, then the color on hover */
+a:link, a:visited, a:active {color:#655978;text-decoration:underline;text-decoration-style:dotted;}
+a:hover {color:#2F2A37;}
+:focus-visible {outline:2px solid #AE99B2;outline-offset:2px;}
+a img {border-width:0;}
+b {color:#2F2A37;font-weight:bold;}
+p {margin:0 0 .8em;}
+
+/* SCROLLBAR (Chrome, Edge and Safari only) */
+::-webkit-scrollbar-thumb {background-color:#AE99B2;border-radius:0;}
+::-webkit-scrollbar {width:7px;height:4px;background:transparent;}
+
+/* LAYOUT: sidebar and main column side by side, centered.
+   100px = space above the layout; 20px = gap between the columns. */
+.wrap {display:flex;justify-content:center;align-items:flex-start;gap:20px;padding:100px 12px 60px;}
+.main {display:flex;flex-direction:column;gap:20px;width:410px;}
+
+/* SECTION TITLE BARS (the strips above each block). The little moon is img/icon-moon.svg */
+.title {display:block;color:#F1EEF2;background:#4E4460;font:500 14px 'Pixelify Sans', monospace;letter-spacing:1px;
+  padding:2px 4px 2px 6px;margin:0 0 6px;}
+.title::before {content:"";display:inline-block;width:12px;height:12px;margin-right:4px;vertical-align:-1px;
+  background:url('img/icon-moon.svg') center/contain no-repeat;image-rendering:pixelated;}
+* + .title, * + .shelf-group, * + details.shelf-group {margin-top:14px;}
+h2.title {font-size:15px;}
+/* smaller bars inside a page (read, watchlist, latest…) */
+h3.title {background:#DCD3DE;color:#2F2A37;font-size:13px;}
+h2.title:focus {outline:none;}
+.count {opacity:.7;font-size:12px;}
+
+/* MAIN TEXT BOX (under the banner): 410px wide */
+#content {background:#F1EEF2;width:410px;padding:8px;border:2px solid #4E4460;box-sizing:border-box;outline:2px solid #AE99B2;outline-offset:3px;}
+/* SIDEBAR (left): 180px wide */
+#left {background:#F1EEF2;width:180px;padding:8px;border:2px solid #4E4460;box-sizing:border-box;flex:none;outline:2px solid #AE99B2;outline-offset:3px;}
+#left > .title:not(:first-child) {margin-top:14px;}
+
+/* BANNER: 410px wide; the picture area is 220px tall (change .scene height), the nav sits under it.
+   The drawing is img/banner.svg */
+#banner {background:#3B3546;width:410px;padding:4px;border:2px solid #AE99B2;box-sizing:border-box;}
+#banner .scene {position:relative;height:220px;overflow:hidden;}
+#banner .art {position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;object-position:center bottom;image-rendering:pixelated;}
+/* SITE NAME inside the banner: change margin-top to move it up or down */
+.bigtitle {position:absolute;right:0;top:92px;font:500 20px 'Pixelify Sans', monospace;text-align:right;color:#F1EEF2;padding:0 6px 2px;text-shadow:1px 1px 0 #241F2B;}
+.bigtitle::before {content:"";display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:-1px;
+  background:url('img/icon-moon.svg') center/contain no-repeat;image-rendering:pixelated;}
+.bigtitle span {color:#AE99B2;}
+
+/* NAV BUTTONS under the site name; the current page is the pale one */
+#navigation {display:flex;flex-wrap:wrap;gap:5px;margin:0;padding:6px 0 2px;list-style:none;border-top:1px solid #AE99B2;}
+#navigation a {display:block;padding:2px 10px;font:500 12px 'Pixelify Sans', monospace;text-transform:lowercase;letter-spacing:1px;
+  text-decoration:none;color:#2F2A37;background:#AE99B2;border:2px solid #241F2B;}
+#navigation a:hover, #navigation a[aria-current="page"] {background:#F1EEF2;}
+
+/* the small picture in the "about" box (img/avatar.svg) */
+.av {float:left;margin:2px 8px 4px 0;image-rendering:pixelated;}
+.small {font-size:.92em;}
+
+/* ───── NOW PLAYING BAR: full width, fixed to the top of the screen. Buttons are img/btn-*.svg ─────
+   background = the bar's color; border-bottom = the lilac line under it */
+.nowbar {position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;gap:12px;
+  padding:6px 16px;box-sizing:border-box;background:#4E4460;color:#F1EEF2;text-align:left;
+  border-bottom:2px solid #AE99B2;box-shadow:0 2px 0 #241F2B;font-size:12px;line-height:1.4;}
+.nowbar-label {flex:none;font:500 14px 'Pixelify Sans', monospace;letter-spacing:1px;white-space:nowrap;}
+.nowbar-label::before {content:"";display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px;
+  background:url('img/icon-moon.svg') center/contain no-repeat;image-rendering:pixelated;}
+.nowbar a:link, .nowbar a:visited {color:#DCD3DE;}
+.nowbar a:hover {color:#FFFFFF;}
+.player .marquee {flex:1;min-width:0;overflow:hidden;white-space:nowrap;font-style:italic;}
+.player .marquee span {display:inline-block;}
+.player .marquee span + span {display:none;}
+.player.playing .marquee span + span {display:inline-block;}
+.player.playing .marquee span {animation:scroll 18s linear infinite;}
+@keyframes scroll {to {transform:translateX(-100%);}}
+.player .time {flex:none;font-size:11px;font-variant-numeric:tabular-nums;color:#DCD3DE;}
+.player .bar {flex:none;width:160px;height:8px;border:2px solid #F1EEF2;background:#3B3546;cursor:pointer;}
+.player .bar i {display:block;height:100%;width:0;background:#AE99B2;}
+.player .btns {flex:none;display:flex;gap:6px;}
+.player button {display:flex;align-items:center;justify-content:center;width:30px;height:24px;padding:0;cursor:pointer;
+  background:#AE99B2;border:2px solid #241F2B;}
+.player button:hover {background:#F1EEF2;}
+.player button:disabled {opacity:.45;cursor:default;}
+.player button img {width:14px;height:14px;image-rendering:pixelated;}
+.player .i-pause, .player.playing .i-play {display:none;}
+.player.playing .i-pause {display:block;}
+.player.off .bar, .player.off .time {opacity:.45;}
+.player .sc {flex:none;font-size:11px;white-space:nowrap;}
+/* keeps pages from scrolling under the bar when the site jumps to a section */
+html {scroll-padding-top:64px;}
+#content {scroll-margin-top:64px;}
+.sc-frame {position:absolute;left:-9999px;top:0;width:1px;height:1px;border:0;}
+/* the music players themselves are hidden off-screen; the bar above controls them */
+.yt-frame {position:absolute;left:-9999px;top:0;width:200px;height:200px;overflow:hidden;}
+
+/* ───── HOMEPAGE POSTS: each one is its own frame under the main box, like #content ───── */
+.feed {display:flex;flex-direction:column;gap:20px;}
+.feed > .post, .feed > .empty {margin:0;padding:8px;background:#F1EEF2;border:2px solid #4E4460;box-sizing:border-box;
+  outline:2px solid #AE99B2;outline-offset:3px;}
+.post-head {display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px;padding:2px 4px 2px 6px;background:#4E4460;}
+.post-head .tag::before {content:"";display:inline-block;width:12px;height:12px;margin-right:4px;vertical-align:-1px;
+  background:url('img/icon-moon.svg') center/contain no-repeat;image-rendering:pixelated;}
+.tag {font:500 14px 'Pixelify Sans', monospace;letter-spacing:1px;color:#F1EEF2;}
+a.post-date:link, a.post-date:visited {font-size:11px;color:#DCD3DE;}
+.post-body > .entry {padding:0;border:0;}
+.post-body > .review {margin-top:8px;}
+.post-verb {margin:0;font-size:11px;color:#776B89;}
+.post-title {margin:0 0 4px;font:500 14px 'Pixelify Sans', monospace;color:#2F2A37;}
+.feed > .older {align-self:center;}
+/* a single post opened from its date link sits inside the main box, so it needs no frame of its own */
+#view .post {margin:0;}
+.back {margin-bottom:8px;}
+
+/* ───── ENTRIES (books, films, series, games) ───── */
+.entry {display:grid;grid-template-columns:60px minmax(0,1fr);gap:10px;padding:8px 0;border-bottom:1px dashed #AE99B2;}
+.shelf-group .entry:last-child {border-bottom:0;}
+.entry-title {margin:0;font:500 14px/1.3 'Pixelify Sans', monospace;color:#2F2A37;}
+.entry-title a {color:#2F2A37;}
+.entry-meta {margin:0;font-size:11px;color:#655978;}
+.stars {color:#655978;letter-spacing:1px;font-size:12px;}
+.entry-date {font-size:11px;color:#776B89;}
+.review {margin-top:4px;}
+.review p:last-child {margin-bottom:0;}
+.review.clamped {display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;}
+.more, .older, .sort select {background:#AE99B2;color:#2F2A37;border:2px solid #241F2B;padding:0 8px;cursor:pointer;font-size:11px;}
+.older {padding:2px 12px;font-size:12px;}
+.more {margin-top:4px;}
+.more:hover, .older:hover {background:#F1EEF2;}
+
+/* covers: shared/covers/ holds the downloaded ones; entries without a cover show a letter */
+a.cover, .cover {display:block;align-self:start;text-decoration:none;}
+.cover img, .nocover {display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border:2px solid #4E4460;box-sizing:border-box;background:#DCD3DE;}
+.cover.square img, .cover.square .nocover {aspect-ratio:1;}
+.nocover {display:flex;align-items:center;justify-content:center;font:500 22px 'Pixelify Sans', monospace;color:#776B89;}
+
+/* sort control, tabs, dropped, backlog */
+.sort {display:flex;justify-content:flex-end;align-items:center;gap:6px;font-size:11px;margin:-2px 0 2px;}
+.sort select {padding:0 4px;}
+.tabs {display:flex;gap:5px;margin:0 0 8px;}
+.tabs a {padding:0 10px;font:500 12px 'Pixelify Sans', monospace;text-decoration:none;color:#2F2A37;background:#DCD3DE;border:2px solid #4E4460;}
+.tabs a[aria-current="page"] {background:#4E4460;color:#F1EEF2;}
+details.shelf-group summary {cursor:pointer;font:500 13px 'Pixelify Sans', monospace;color:#2F2A37;}
+.backlog {list-style:none;margin:0;padding:0;}
+.backlog li {display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px dashed #AE99B2;}
+.backlog li:last-child {border-bottom:0;}
+.backlog .cover {width:22px;flex:none;}
+.backlog .nocover {font-size:11px;}
+.backlog .entry-meta {display:inline;}
+
+/* albums: a grid of square covers */
+.albums {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.album {margin:0;}
+.album figcaption {display:flex;flex-direction:column;margin-top:4px;line-height:1.35;}
+.album figcaption b a {color:#2F2A37;}
+.album .note summary {cursor:pointer;font-size:11px;color:#655978;}
+
+/* links page */
+.linklist {list-style:none;margin:0 0 4px;padding:0;}
+.linklist li {padding:3px 0;border-bottom:1px dashed #AE99B2;}
+.linklist li:last-child {border-bottom:0;}
+.linklist .entry-meta {display:block;}
+
+.empty {color:#776B89;font-style:italic;}
+.credit {margin-top:14px;font-size:10px;color:#776B89;}
+
+@media (prefers-reduced-motion: reduce) {
+  .player.playing .marquee span {animation:none;}
+}
+
+/* PHONES: on screens narrower than 640px, everything stacks into one column */
+@media (max-width:640px) {
+  .wrap {flex-direction:column;align-items:center;padding-top:84px;}
+  /* the bar becomes two rows: controls on top, the song title under them */
+  .nowbar {flex-wrap:wrap;gap:6px 10px;padding:6px 10px;}
+  .nowbar-label {display:none;}
+  .player .marquee {order:9;flex-basis:100%;}
+  .player .bar {flex:1;width:auto;min-width:60px;}
+  .player .sc {display:none;}
+  .main {order:-1;width:100%;max-width:410px;}
+  #left, #content, #banner {width:100%;max-width:410px;}
+}
+
+/* Global scaling */
+/* @media (min-width: 900px) {
+  body {zoom: 1.25;}
+} */

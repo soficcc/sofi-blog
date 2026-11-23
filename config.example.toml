@@ -1,0 +1,24 @@
+# Copy this file to config.toml and fill it in. config.toml stays on your computer:
+# it's listed in .gitignore, so your keys never end up on GitHub.
+
+[site]
+title = "Sofia’s little grimoire"
+url = "https://YOUR-USERNAME.github.io/sofi-blog"   # used for links in the RSS feed
+default_style = "witchy"                            # the style folder inside docs/ that the site opens
+contact = "you@example.com"                         # MusicBrainz and Wikidata ask scripts to say who they are
+
+[music]
+# a YouTube playlist (public or unlisted): open it and copy the address, the one with list= in it.
+# A SoundCloud playlist address works here too.
+playlist = ""
+
+[links]
+series = "tvmaze"      # where series link to: tvmaze, trakt or imdb
+albums = "musicbrainz" # where albums link to: musicbrainz, spotify, bandcamp or youtube
+
+[omdb]
+# optional, for film posters (films themselves come from Wikidata, no key needed).
+# free key with just an email address: omdbapi.com → API Key → FREE. Without it, films have no
+# poster unless Wikidata has one; add your own with "edit an entry" → cover.
+api_key = ""
+

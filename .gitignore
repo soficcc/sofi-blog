@@ -1,0 +1,6 @@
+config.toml
+.cache/
+__pycache__/
+*.tmp
+.DS_Store
+data/backups/
