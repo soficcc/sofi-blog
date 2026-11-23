@@ -4,7 +4,6 @@
 [site]
 title = "Sofia’s little grimoire"
 url = "https://YOUR-USERNAME.github.io/sofi-blog"   # used for links in the RSS feed
-default_style = "witchy"                            # the style folder inside docs/ that the site opens
 contact = "you@example.com"                         # MusicBrainz and Wikidata ask scripts to say who they are
 
 [music]

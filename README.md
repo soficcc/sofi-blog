@@ -45,18 +45,19 @@ sofi-blog.py           the question-asking helper
 config.toml            your keys and settings (stays on your computer)
 data/entries.json      every entry, post and link (the helper edits this)
 docs/                  the website itself
-  index.html           sends visitors to the default style
+  index.html           the page itself (edit the words marked EDIT)
+  style.css            every color, size and font
+  img/                 the banner, avatar, background, icons and player buttons
   feed.xml             RSS feed of homepage posts (generated)
   shared/app.js        page logic shared by every style
   shared/data.js       the data, generated from data/entries.json
   shared/covers/       downloaded covers; replace any file to use your own
-  witchy/              the witchy look: index.html, style.css, img/
 ```
 
 
 ## Changing pictures
 
-Every picture is a file in `docs/witchy/img/`. Replace a file with your own and keep the name, or change the name where it's used: `index.html` for the banner, avatar and buttons, `style.css` for the background and the title icon. PNG, JPG, GIF and SVG all work.
+Every picture is a file in `docs/img/`. Replace a file with your own and keep the name, or change the name where it's used: `index.html` for the banner, avatar and buttons, `style.css` for the background and the title icon. PNG, JPG, GIF and SVG all work.
 
 - `banner.svg`, `avatar.svg`, `background.jpg` (the tiled background), `icon-moon.svg` (the moon on every title bar), `btn-play/pause/prev/next.svg` (player buttons).
 

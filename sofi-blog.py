@@ -1156,7 +1156,6 @@ def feed_items(data):
 def build_feed(data):
     site = CONF.get("site", {})
     base = (site.get("url") or "https://example.github.io/sofi-blog").rstrip("/")
-    style = site.get("default_style", "witchy")
     title = site.get("title", "Sofia’s little grimoire")
     out = []
     for kind, x in feed_items(data)[:30]:
@@ -1176,7 +1175,7 @@ def build_feed(data):
             when = when.astimezone()
         html_desc = "".join(f"<p>{xml_escape(p).replace(chr(10), '<br>')}</p>" for p in desc.split("\n\n"))
         out.append(
-            f"<item><title>{xml_escape(t)}</title><link>{base}/{style}/#post-{x['id']}</link>"
+            f"<item><title>{xml_escape(t)}</title><link>{base}/#post-{x['id']}</link>"
             f"<guid isPermaLink=\"false\">{x['id']}</guid><pubDate>{format_datetime(when)}</pubDate>"
             f"<description>{xml_escape(html_desc)}</description></item>")
     return ('<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel>'
@@ -1199,11 +1198,6 @@ def build(data):
     (SHARED / "data.js").write_text(js, encoding="utf-8")
     (DOCS / "feed.xml").write_text(build_feed(data), encoding="utf-8")
     (DOCS / ".nojekyll").touch()
-    style = site.get("default_style", "witchy")
-    (DOCS / "index.html").write_text(
-        f'<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>{payload["site"]["title"]}</title>'
-        f'<meta http-equiv="refresh" content="0; url={style}/"></head>'
-        f'<body><a href="{style}/">enter the site</a></body></html>\n', encoding="utf-8")
 
 
 def save_and_build(data, what="saved"):

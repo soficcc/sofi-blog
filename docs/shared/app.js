@@ -6,7 +6,7 @@
   'use strict';
 
   var G = window.SOFIBLOG || { entries: [], posts: [], links: [], now: [], music: {}, site: {} };
-  var BASE = document.documentElement.getAttribute('data-base') || '../';
+  var BASE = document.documentElement.getAttribute('data-base') || '';  /* path from the page to docs/ */
   var PAGE_SIZE = 8;
 
   var TYPE = {
@@ -245,7 +245,7 @@
     }).join(' ✦ ');
   }
 
-  /* ───── router: #home, #albums, #films, #series, #books, #games, #links, #made, #post-… ───── */
+  /* ───── router: #home, #albums, #films, #series, #books, #games, #links, #post-…, plus any <section data-route> in index.html (like #stuff-i-make) ───── */
   var PAGES = {
     albums: renderAlbums,
     films: function () { return renderScreen('film'); },
@@ -255,12 +255,18 @@
     links: renderLinks
   };
   var NAV_OF = { series: 'films' };
+  /* true when index.html has a <section data-route="…"> with this name (like "stuff-i-make") */
+  function hasSection(name) {
+    return Array.prototype.some.call(document.querySelectorAll('[data-route]'), function (el) {
+      return el.getAttribute('data-route') === name && el.id !== 'view';
+    });
+  }
   function route() {
     var h = decodeURIComponent(location.hash.replace(/^#/, '')) || 'home';
     var name = h, html = null;
     if (h.indexOf('post-') === 0) { name = 'post'; html = renderSinglePost(h.slice(5)); }
     else if (PAGES[h]) html = PAGES[h]();
-    else if (h !== 'made') name = 'home';
+    else if (!hasSection(h)) name = 'home';
     var view = $('view');
     document.querySelectorAll('[data-route]').forEach(function (sec) {
       var r = sec.getAttribute('data-route');
