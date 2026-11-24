@@ -706,7 +706,7 @@ window.SOFIBLOG = {
   {
    "id": "film-q113903713",
    "type": "film",
-   "title": "Q113903713",
+   "title": "I Saw the TV Glow",
    "creator": "Jane Schoenbrun",
    "year": 2024,
    "cover": "shared/covers/film-q113903713.jpg",
@@ -744,5 +744,5 @@ window.SOFIBLOG = {
  ],
  "posts": [],
  "made": "",
- "built": "2026-11-24T09:13:35+01:00"
+ "built": "2026-11-24T09:18:44+01:00"
 };
