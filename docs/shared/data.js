@@ -744,5 +744,20 @@ window.SOFIBLOG = {
  ],
  "posts": [],
  "made": "",
- "built": "2026-11-24T09:18:44+01:00"
+ "made_items": [
+  {
+   "id": "made-archi-loop",
+   "kind": "music",
+   "title": "archi - loop",
+   "text": "first actual piece i wrote, it's very simple but i really like the bows here",
+   "audio": "made/made-archi-loop.mp3",
+   "image": null,
+   "link": "",
+   "date": "2026-11-24",
+   "home": true,
+   "posted": "2026-11-25T10:00:12+01:00",
+   "added": "2026-11-25T09:57:26+01:00"
+  }
+ ],
+ "built": "2026-11-25T10:00:12+01:00"
 };

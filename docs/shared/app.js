@@ -122,13 +122,18 @@
   function feedItems() {
     var items = G.entries.filter(function (e) { return e.home && e.posted; })
       .map(function (e) { return { kind: 'entry', x: e, at: e.posted }; })
-      .concat((G.posts || []).map(function (p) { return { kind: 'post', x: p, at: p.posted }; }));
+      .concat((G.posts || []).map(function (p) { return { kind: 'post', x: p, at: p.posted }; }))
+      .concat((G.made_items || []).filter(function (m) { return m.home && m.posted; })
+        .map(function (m) { return { kind: 'made', x: m, at: m.posted }; }));
     return items.sort(function (a, b) { return b.at.localeCompare(a.at); });
   }
   function postHtml(it) {
     var x = it.x, id = 'post-' + x.id, body;
-    var tag = it.kind === 'entry' ? TYPE[x.type].label : 'note';
-    if (it.kind === 'entry') {
+    var tag = it.kind === 'entry' ? TYPE[x.type].label : it.kind === 'made' ? (x.kind || 'made') : 'note';
+    var day = it.kind === 'made' ? (x.date || x.posted || x.added) : x.posted;
+    if (it.kind === 'made') {
+      body = madeBody(x);
+    } else if (it.kind === 'entry') {
       var verb = (TYPE[x.type].verbs[x.status || ''] || '');
       body = '<div class="entry">' + cover(x) + '<div class="entry-body">' +
         (verb ? '<p class="post-verb">' + esc(verb) + '</p>' : '') +
@@ -140,7 +145,7 @@
     }
     return '<article class="post post-' + tag + '" id="' + esc(id) + '">' +
       '<header class="post-head"><span class="tag">' + tag + '</span>' +
-      '<a class="post-date" href="#' + esc(id) + '" title="link to this post">' + fmtDate(x.posted) + '</a></header>' +
+      '<a class="post-date" href="#' + esc(id) + '" title="link to this post">' + fmtDate(day) + '</a></header>' +
       '<div class="post-body">' + body + '</div></article>';
   }
   var shown = PAGE_SIZE;
@@ -208,9 +213,52 @@
     }).join('');
   }
   function renderSinglePost(id) {
-    var it = feedItems().filter(function (i) { return i.x.id === id; })[0];
+    var all = feedItems().concat(madeItems().map(function (m) { return { kind: 'made', x: m }; }));
+    var it = all.filter(function (i) { return i.x.id === id; })[0];
     if (!it) return heading('post not found', 2) + '<p class="empty">This post isn’t here any more. <a href="#home">Back to the homepage</a></p>';
-    return '<p class="back"><a href="#home">back to the homepage</a></p>' + postHtml(it);
+    var back = it.kind === 'made' && madeRoute()
+      ? '<a href="#' + esc(madeRoute()) + '">back to ' + esc(navLabel(madeRoute())) + '</a>'
+      : '<a href="#home">back to the homepage</a>';
+    return '<p class="back">' + back + '</p>' + postHtml(it);
+  }
+
+  /* ───── things you make: each one is a post on the "stuff i make" page ───── */
+  function madeItems() {
+    return (G.made_items || []).slice().sort(function (a, b) {
+      return (b.date || b.posted || b.added || '').localeCompare(a.date || a.posted || a.added || '');
+    });
+  }
+  function madeBody(x) {
+    return (x.title ? '<h4 class="post-title">' + esc(x.title) + '</h4>' : '') +
+      (x.image ? '<img class="post-image" src="' + esc(url(x.image)) + '" alt="" loading="lazy">' : '') +
+      (x.audio ? '<audio class="post-audio" controls preload="none" src="' + esc(url(x.audio)) + '"></audio>' : '') +
+      review(x.text, 900) +
+      (x.link ? '<p class="post-link"><a href="' + esc(x.link) + '" target="_blank" rel="noopener">' + esc(host(x.link) || 'link') + '</a></p>' : '');
+  }
+  /* the page that holds the made-page box (id="made"), e.g. "stuff-i-make" */
+  function madeRoute() {
+    var box = $('made'), sec = box && box.closest('[data-route]');
+    return sec ? sec.getAttribute('data-route') : '';
+  }
+  function navLabel(route) {
+    var a = document.querySelector('[data-nav="' + route.replace(/"/g, '') + '"]');
+    return a ? a.textContent.trim() : route;
+  }
+  function renderMadeFeed() {
+    var route = madeRoute();
+    if (!route) return;
+    var holder = $('made-feed');
+    if (!holder) {
+      // a column of post frames, placed right after the homepage posts (or the main box)
+      holder = document.createElement('div');
+      holder.id = 'made-feed';
+      holder.className = 'feed';
+      var after = $('feed') || $('content');
+      after.parentNode.insertBefore(holder, after.nextSibling);
+    }
+    holder.setAttribute('data-route', route);
+    holder.hidden = true;
+    holder.innerHTML = madeItems().map(function (m) { return postHtml({ kind: 'made', x: m }); }).join('');
   }
 
   /* ───── sidebar boxes (a box with nothing in it hides along with its title) ───── */
@@ -329,7 +377,9 @@
         box.classList.remove('off');
         [ui.play, ui.prev, ui.next].forEach(function (b) { b.disabled = false; });
       },
+      pause: null,
       playing: function (on) {
+        if (on) document.querySelectorAll('audio').forEach(function (a) { a.pause(); });
         box.classList.toggle('playing', on);
         ui.play.setAttribute('aria-label', on ? 'Pause' : 'Play');
         ui.play.setAttribute('aria-pressed', String(on));
@@ -350,6 +400,11 @@
         return Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width));
       }
     };
+    document.addEventListener('play', function (ev) {
+      if (ev.target.tagName !== 'AUDIO') return;
+      document.querySelectorAll('audio').forEach(function (a) { if (a !== ev.target) a.pause(); });
+      if (box.classList.contains('playing') && ui.pause) ui.pause();
+    }, true);
     var music = G.music || {};
     if (music.provider === 'youtube') startYouTube(ui, music);
     else if (music.playlist) startSoundCloud(ui, music.playlist);
@@ -436,6 +491,7 @@
         if (player.getPlayerState() === window.YT.PlayerState.PLAYING) player.pauseVideo();
         else player.playVideo();
       };
+      ui.pause = function () { player.pauseVideo(); };
       ui.prev.onclick = function () { player.previousVideo(); };
       ui.next.onclick = function () { player.nextVideo(); };
       ui.bar.onclick = function (ev) {
@@ -490,6 +546,7 @@
       w.bind(E.ERROR, function () { ui.off('this track can’t be played here'); });
       w.bind(E.PLAY_PROGRESS, function (p) { ui.progress(p.currentPosition / 1000, duration); });
       ui.play.onclick = function () { w.toggle(); };
+      ui.pause = function () { w.pause(); };
       ui.prev.onclick = function () { w.prev(); };
       ui.next.onclick = function () { w.next(); };
       ui.bar.onclick = function (ev) { if (duration) w.seekTo(ui.seekFraction(ev) * duration * 1000); };
@@ -499,12 +556,15 @@
 
   function renderMade() {
     var box = $('made');
-    if (box) box.innerHTML = G.made ? md(G.made) : '<p class="empty">Nothing here yet.</p>';
+    if (!box) return;
+    if (G.made) box.innerHTML = md(G.made);
+    else box.innerHTML = madeItems().length ? '' : '<p class="empty">Nothing here yet.</p>';
   }
 
   /* ───── start ───── */
   renderFeed();
   renderMade();
+  renderMadeFeed();
   renderNow();
   renderElsewhere();
   route();

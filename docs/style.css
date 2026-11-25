@@ -199,3 +199,8 @@ details.shelf-group summary {cursor:pointer;font:500 13px 'Pixelify Sans', monos
 /* @media (min-width: 900px) {
   body {zoom: 1.25;}
 } */
+
+/* ───── THINGS YOU MAKE: pictures, audio players and links inside posts ───── */
+.post-image {display:block;max-width:100%;height:auto;margin:6px 0 4px;border:2px solid #4E4460;box-sizing:border-box;}
+.post-audio {display:block;width:100%;margin:6px 0 4px;}
+.post-link {margin:8px 0 0;font-size:11px;}

@@ -35,6 +35,9 @@ CONFIG_FILE = ROOT / "config.toml"
 DOCS = ROOT / "docs"  # the folder GitHub Pages publishes
 SHARED = DOCS / "shared"
 COVERS = SHARED / "covers"
+MADE_FILES = DOCS / "made"  # audio and images for the things you make
+MADE_KINDS = ["music", "writing", "art", "other"]
+AUDIO_TYPES = {".mp3", ".m4a", ".aac", ".ogg", ".opus", ".wav", ".flac"}
 
 KINDS = ["book", "film", "series", "album", "game"]
 STATUSES = {
@@ -227,6 +230,7 @@ def load_data():
     data.setdefault("entries", [])
     data.setdefault("posts", [])
     data.setdefault("made", "")
+    data.setdefault("made_items", [])
     for e in data["entries"]:
         if "started" not in e:
             # older entries kept one date; for things in progress, that date was when they started
@@ -736,7 +740,7 @@ def store_one_cover(e, source, quiet=False):
 # ───────────────────────── entries ─────────────────────────
 
 def unique_id(data, base):
-    ids = {e["id"] for e in data["entries"]} | {p["id"] for p in data["posts"]}
+    ids = {e["id"] for e in data["entries"]} | {p["id"] for p in data["posts"]} | {m["id"] for m in data["made_items"]}
     i, cand = 2, base
     while cand in ids:
         cand, i = f"{base}-{i}", i + 1
@@ -845,16 +849,21 @@ def add_entry(data):
 
 def pick_entry(data, message="which entry?"):
     es = sorted(data["entries"], key=lambda e: e.get("added", ""), reverse=True)
-    if not es:
+    made = sorted(data["made_items"], key=lambda m: m.get("added", ""), reverse=True)
+    if not es and not made:
         say("  there are no entries yet.")
         return None
-    eid = select(message, [Choice(f"{e['type']:<7} {entry_label(e)}", value=e["id"]) for e in es], search=True)
-    return next(e for e in data["entries"] if e["id"] == eid)
+    choices = [Choice(f"{e['type']:<7} {entry_label(e)}", value=e["id"]) for e in es]
+    choices += [Choice(f"{'made':<7} {m['title']} ({m['kind']})", value=m["id"]) for m in made]
+    eid = select(message, choices, search=True)
+    return next(x for x in data["entries"] + data["made_items"] if x["id"] == eid)
 
 
 def edit_entry(data):
     e = pick_entry(data)
-    if e:
+    if e and e in data["made_items"]:
+        edit_made_item(data, e)
+    elif e:
         edit_one(data, e)
 
 
@@ -1046,7 +1055,7 @@ def edit_links(data):
 
 
 def edit_made(data):
-    say("  this is the text on the “made” page. a blank line starts a new paragraph;")
+    say("  this is the intro at the top of the made page, above the things you made. a blank line starts a new paragraph;")
     say("  *italic*, **bold** and [link text](https://…) work too.")
     if data["made"]:
         what = select("the made page:", ["edit it in your text editor", "clear it", "never mind"])
@@ -1056,6 +1065,158 @@ def edit_made(data):
     else:
         data["made"] = open_editor("")
     save_and_build(data, "updated the made page")
+
+
+# ───────────────────────── things you make ─────────────────────────
+
+def store_made_file(m, field, source, audio=False):
+    """Copy an audio file or image (a file on this computer, or an image URL) into docs/made/."""
+    source = (source or "").strip().strip("'\"")
+    if not source:
+        return False
+    MADE_FILES.mkdir(parents=True, exist_ok=True)
+    try:
+        if re.match(r"https?://", source):
+            if audio:
+                say("  audio has to be a file on this computer; for music that lives online, use the link instead.")
+                return False
+            r = http_get(source)
+            ctype = r.headers.get("Content-Type", "")
+            ext = ".png" if "png" in ctype else ".gif" if "gif" in ctype else ".webp" if "webp" in ctype else ".jpg"
+            data_bytes = r.content
+        else:
+            src = Path(os.path.expanduser(source.replace("\\ ", " ")))
+            if not src.is_file():
+                say(f"  couldn't find the file {src}.")
+                return False
+            ext = src.suffix.lower()
+            if audio and ext not in AUDIO_TYPES:
+                say(f"  {ext or 'that'} isn't an audio file the browser can play; use mp3, m4a, ogg, wav or flac.")
+                return False
+            size = src.stat().st_size / 1_000_000
+            if size > 95:
+                say(f"  that file is {size:.0f} MB; GitHub won't take files over 100 MB. Export a smaller mp3 first.")
+                return False
+            if size > 25:
+                say(f"  heads up: that file is {size:.0f} MB, so it will take a while to load for visitors.")
+            data_bytes = src.read_bytes()
+    except requests.RequestException:
+        say("  couldn't download that image.")
+        return False
+    remove_made_file(m, field)
+    target = MADE_FILES / f"{m['id']}{'-image' if field == 'image' else ''}{ext}"
+    target.write_bytes(data_bytes)
+    m[field] = target.relative_to(DOCS).as_posix()
+    return True
+
+
+def remove_made_file(m, field):
+    if m.get(field):
+        f = DOCS / m[field]
+        if f.exists() and f.parent == MADE_FILES:
+            f.unlink()
+    m[field] = None
+
+
+def print_made(m):
+    line = "─" * 46
+    say(line)
+    say(f" {m['kind']}: {m['title']}")
+    bits = [pretty_date(m["date"]) if m.get("date") else "no date",
+            "on the homepage too" if m.get("home") else "only on its own page"]
+    say(" " + " · ".join(bits))
+    if m.get("text"):
+        t = m["text"].replace("\n", " ")
+        say(f" “{t[:80]}{'…' if len(t) > 80 else ''}”")
+    for field, label in (("_audio_src", "audio"), ("audio", "audio"), ("_image_src", "image"), ("image", "image")):
+        if m.get(field):
+            say(f" {label} → {m[field]}")
+    if m.get("link"):
+        say(f" link → {m['link']}")
+    say(line)
+
+
+def add_made(data):
+    kind = select("what kind of thing?", MADE_KINDS)
+    title = text("title?", validate=v_nonempty)
+    m = dict(id=unique_id(data, f"made-{slugify(title)}"), kind=kind, title=title, text="",
+             audio=None, image=None, link="", date=None, home=False, posted=None, added=now_iso())
+    m["text"] = ask_long("description?")
+    if kind == "music":
+        m["_audio_src"] = text("audio file?", instruction="(drag the file into this window; enter to skip)")
+    m["_image_src"] = text("image?", instruction="(a file, drag it in, or an image URL; enter to skip)")
+    m["link"] = text("link?", instruction="(where else it lives, like Bandcamp or a document; enter to skip)")
+    m["date"] = ask_date("made on?", today())
+    m["home"] = confirm("post it on the homepage too?", default=True)
+    print_made(m)
+    if not confirm("save and rebuild the site?"):
+        say("  not saved.")
+        return
+    audio_src, image_src = m.pop("_audio_src", ""), m.pop("_image_src", "")
+    if audio_src and not store_made_file(m, "audio", audio_src, audio=True):
+        say("  saved without the audio; add it with “edit an entry” → audio.")
+    if image_src and not store_made_file(m, "image", image_src):
+        say("  saved without the image; add it with “edit an entry” → image.")
+    if m["home"]:
+        m["posted"] = now_iso()
+    data["made_items"].append(m)
+    save_and_build(data, f"posted {m['title']}")
+
+
+def edit_made_item(data, m):
+    changed = False
+    while True:
+        print_made(m)
+        what = select("what do you want to change?", [
+            "title", "description", "kind", "audio", "image", "link", "date",
+            "homepage: " + ("take it off" if m.get("home") else "post it there too"),
+            "delete this", "done"], default="done")
+        if what == "done":
+            break
+        if what == "title":
+            m["title"] = text("title?", default=m["title"], validate=v_nonempty)
+        elif what == "description":
+            m["text"] = ask_long("description?", m.get("text", ""))
+        elif what == "kind":
+            m["kind"] = select("what kind of thing?", MADE_KINDS, default=m.get("kind"))
+        elif what in ("audio", "image"):
+            how = select(f"{what}:", [f"a new {what} file", f"remove the {what}", "never mind"])
+            if how.startswith("a new"):
+                hint = "(drag the file into this window)" if what == "audio" else "(a file, drag it in, or an image URL)"
+                store_made_file(m, what, text(f"{what}?", instruction=hint, validate=v_nonempty), audio=(what == "audio"))
+            elif how.startswith("remove"):
+                remove_made_file(m, what)
+        elif what == "link":
+            m["link"] = text("link?", default=m.get("link", ""))
+        elif what == "date":
+            m["date"] = ask_date("made on?", m.get("date"))
+        elif what.startswith("homepage"):
+            m["home"] = not m.get("home")
+            if m["home"] and not m.get("posted"):
+                m["posted"] = now_iso()
+        elif what == "delete this":
+            if confirm(f"delete {m['title']} for good, with its files?", default=False):
+                remove_made_file(m, "audio")
+                remove_made_file(m, "image")
+                data["made_items"].remove(m)
+                save_and_build(data, f"deleted {m['title']}")
+                return
+            continue
+        changed = True
+    if changed:
+        save_and_build(data, f"updated {m['title']}")
+
+
+def prune_made_files(data):
+    """Delete audio and images in docs/made/ that nothing uses any more."""
+    used = {(DOCS / m[f]).resolve() for m in data["made_items"] for f in ("audio", "image") if m.get(f)}
+    removed = 0
+    if MADE_FILES.exists():
+        for f in MADE_FILES.iterdir():
+            if f.is_file() and f.resolve() not in used:
+                f.unlink()
+                removed += 1
+    return removed
 
 
 # ───────────────────────── deleting ─────────────────────────
@@ -1096,6 +1257,8 @@ def everything_list(data):
         choices.append(Choice(f"link    [{l['group']}] {l['label']}", value=("link", i)))
     for i, n in enumerate(data["now"]):
         choices.append(Choice(f"now     {n['label']}: {n['value']}", value=("now", i)))
+    for m in sorted(data["made_items"], key=lambda m: m.get("added", ""), reverse=True):
+        choices.append(Choice(f"made    {m['title']} ({m['kind']})", value=("piece", m["id"])))
     if data["made"]:
         preview = data["made"].replace("\n", " ")
         choices.append(Choice(f"made    page text: {preview[:40]}{'…' if len(preview) > 40 else ''}", value=("made", 0)))
@@ -1109,7 +1272,7 @@ def delete_things(data):
         return
     how = select("delete what?", [
         "pick things from a list",
-        "everything (entries, posts, links, right now, made page and covers)",
+        "everything (entries, posts, things you made, links, right now, the made page text, covers and files)",
         "never mind"])
     if how == "never mind":
         return
@@ -1117,7 +1280,7 @@ def delete_things(data):
         if not confirm(f"delete all {len(choices)} things and every cover, so the site starts empty?", default=False):
             return
         path = backup(data)
-        data.update(now=[], links=[], entries=[], posts=[], made="")
+        data.update(now=[], links=[], entries=[], posts=[], made="", made_items=[])
     else:
         picks = ask(questionary.checkbox(
             "which ones?", choices=choices, qmark=QMARK, style=STYLE,
@@ -1137,9 +1300,11 @@ def delete_things(data):
         data["posts"] = [p for p in data["posts"] if ("post", p["id"]) not in gone]
         data["links"] = [l for i, l in enumerate(data["links"]) if ("link", i) not in gone]
         data["now"] = [n for i, n in enumerate(data["now"]) if ("now", i) not in gone]
+        data["made_items"] = [m for m in data["made_items"] if ("piece", m["id"]) not in gone]
         if ("made", 0) in gone:
             data["made"] = ""
     n = prune_covers(data)
+    prune_made_files(data)
     save_and_build(data, "deleted" + (f", plus {n} cover{'s' if n != 1 else ''}" if n else ""))
     say(f"  (a copy of everything from before is in data/backups/{path.name}, just in case)")
 
@@ -1149,6 +1314,7 @@ def delete_things(data):
 def feed_items(data):
     items = [("entry", e) for e in data["entries"] if e.get("home") and e.get("posted")]
     items += [("post", p) for p in data["posts"]]
+    items += [("made", m) for m in data["made_items"] if m.get("home") and m.get("posted")]
     items.sort(key=lambda t: t[1]["posted"], reverse=True)
     return items
 
@@ -1165,6 +1331,9 @@ def build_feed(data):
             desc = entry_label(x) + (f" {stars(x['rating'])}" if x.get("rating") is not None else "")
             if x.get("review"):
                 desc += "\n\n" + x["review"]
+        elif kind == "made":
+            t = f"{x['kind']}: {x['title']}"
+            desc = x.get("text") or x["title"]
         else:
             t = x.get("title") or re.sub(r"[*_]", "", x["text"]).split("\n")[0]
             if len(t) > 70:
@@ -1191,7 +1360,7 @@ def build(data):
     payload = dict(
         site=dict(title=site.get("title", "Sofia’s little grimoire")),
         music=music_source()[0],
-        now=data["now"], links=data["links"], entries=data["entries"], posts=data["posts"], made=data["made"],
+        now=data["now"], links=data["links"], entries=data["entries"], posts=data["posts"], made=data["made"], made_items=data["made_items"],
         built=now_iso())
     js = ("/* made by sofi-blog.py from data/entries.json: run ./sofi-blog.sh instead of editing this */\n"
           "window.SOFIBLOG = " + json.dumps(payload, ensure_ascii=False, indent=1).replace("</", "<\\/") + ";\n")
@@ -1254,10 +1423,11 @@ MENU = [
     ("add an entry", add_entry),
     ("edit an entry", edit_entry),
     ("write a text post", write_post),
+    ("add something I made", add_made),
     ("edit a text post", edit_post),
     ("update the right now box", edit_now),
     ("edit links", edit_links),
-    ("edit the made page", edit_made),
+    ("edit the intro of the made page", edit_made),
     ("delete things", delete_things),
     ("fill in missing covers", fill_missing),
     ("preview the site in your browser", preview),
