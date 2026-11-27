@@ -740,6 +740,25 @@ window.SOFIBLOG = {
    "added": "2026-11-24T09:13:16+01:00",
    "source": "wikidata",
    "source_id": "Q134434223"
+  },
+  {
+   "id": "series-mahou-shoujo-madoka-magica",
+   "type": "series",
+   "title": "Mahou Shoujo Madoka Magica",
+   "creator": "",
+   "year": 2011,
+   "cover": "shared/covers/series-mahou-shoujo-madoka-magica.jpg",
+   "link": "https://www.tvmaze.com/shows/2724/mahou-shoujo-madoka-magica",
+   "status": "finished",
+   "rating": 3.5,
+   "review": "",
+   "date": "2026-11-26",
+   "started": null,
+   "home": false,
+   "posted": null,
+   "added": "2026-11-27T08:55:44+01:00",
+   "source": "tvmaze",
+   "source_id": 2724
   }
  ],
  "posts": [],
@@ -759,5 +778,5 @@ window.SOFIBLOG = {
    "added": "2026-11-25T09:57:26+01:00"
   }
  ],
- "built": "2026-11-25T10:00:12+01:00"
+ "built": "2026-11-27T08:56:16+01:00"
 };
